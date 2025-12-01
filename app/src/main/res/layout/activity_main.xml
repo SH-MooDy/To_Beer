@@ -1,55 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#303030">
 
-    <LinearLayout
-        android:id="@+id/mainContent"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <!-- 상/하 영역 나누는 가이드라인 (화면 높이의 55% 지점) -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_list_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.55" />
 
-        <!-- 🔹 맥주잔 영역: 아래에 채워지는 맥주, 위에 잔 윤곽 -->
-        <FrameLayout
-            android:id="@+id/beerContainer"
-            android:layout_width="120dp"
-            android:layout_height="180dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp">
+    <!-- 상단 펍 느낌 배경 (지금은 단색, 나중에 이미지로 바꿔도 됨) -->
+    <ImageView
+        android:id="@+id/bg_pub"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:src="@android:color/transparent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/guide_list_top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- 맥주 채워지는 부분 (ClipDrawable) -->
-            <ImageView
-                android:id="@+id/imageBeerFill"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/beer_fill"
-                android:scaleType="fitXY" />
+    <!-- 스트릭 표시 (우측 상단) -->
+    <TextView
+        android:id="@+id/textStreak"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔥 0 days"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:padding="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp" />
 
-            <!-- 잔 윤곽 (지금은 임시로 ic_launcher_foreground 사용, 나중에 beer_outline.png 넣어서 교체 추천) -->
-            <ImageView
-                android:id="@+id/imageBeerOutline"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/beer_outline"
-                android:scaleType="fitCenter" />
+    <!-- 맥주잔 컨테이너 (채워지는 부분 + 윤곽) -->
+    <FrameLayout
+        android:id="@+id/beerContainer"
+        android:layout_width="180dp"
+        android:layout_height="220dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/guide_list_top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.7">
 
-        </FrameLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/todoRecycler"
+        <!-- 아래: 채워지는 맥주 (ClipDrawable) -->
+        <ImageView
+            android:id="@+id/imageBeerFill"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-    </LinearLayout>
+            android:layout_height="match_parent"
+            android:src="@drawable/beer_fill"
+            android:scaleType="fitXY" />
 
-    <!-- 오른쪽 아래 + 버튼 -->
+        <!-- 위: 맥주잔 윤곽 PNG -->
+        <ImageView
+            android:id="@+id/imageBeerOutline"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/beer_outline"
+            android:scaleType="fitCenter" />
+    </FrameLayout>
+
+    <!-- 진행률 텍스트 (맥주잔 아래) -->
+    <TextView
+        android:id="@+id/textProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0%"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/beerContainer"
+        app:layout_constraintBottom_toTopOf="@id/guide_list_top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <!-- 할 일 리스트 (하단 전체) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/todoRecycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/guide_list_top"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 할 일 추가 FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddTodo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:src="@android:drawable/ic_input_add" />
+        android:src="@android:drawable/ic_input_add"
+        android:contentDescription="할 일 추가"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="24dp" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,6 @@
 package com.cookandroid.to_beer.ui;
 
+import android.widget.TextView;
 import android.animation.ValueAnimator;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
@@ -39,40 +40,41 @@ public class MainActivity extends AppCompatActivity {
     private ClipDrawable beerClipDrawable;
     private int currentLevel = 0; // 0 ~ 10000
 
+    // 진행률 텍스트
+    private TextView textProgress;
+    // (나중용) 스트릭 텍스트
+    private TextView textStreak;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 오늘 날짜 문자열 (예: 2025-11-21)
         today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 .format(new Date());
-
         dbHelper = new TodoDatabaseHelper(this);
 
-        // 맥주 채워지는 이미지뷰
         imageBeerFill = findViewById(R.id.imageBeerFill);
+        textProgress = findViewById(R.id.textProgress);
+        textStreak = findViewById(R.id.textStreak);
+
+        // ClipDrawable 초기화
         if (imageBeerFill != null) {
             Drawable d = imageBeerFill.getDrawable();
             if (d instanceof ClipDrawable) {
                 beerClipDrawable = (ClipDrawable) d;
             } else if (d != null) {
-                // 혹시 xml에서 clip 이 아니더라도 안전하게 감싸기
                 beerClipDrawable = new ClipDrawable(d, Gravity.BOTTOM, ClipDrawable.VERTICAL);
                 imageBeerFill.setImageDrawable(beerClipDrawable);
             }
-            if (beerClipDrawable != null) {
-                beerClipDrawable.setLevel(currentLevel);
-            }
+            if (beerClipDrawable != null) beerClipDrawable.setLevel(currentLevel);
         }
 
         RecyclerView recyclerView = findViewById(R.id.todoRecycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new TodoAdapter((item, isChecked) -> {
-            // 체크박스 변경 시 DB 업데이트
             dbHelper.updateTodoComplete(item.getId(), isChecked);
-            // 리스트와 맥주잔 진행도 갱신
             loadTodos();
             updateBeerProgress();
         });
@@ -81,28 +83,25 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = findViewById(R.id.fabAddTodo);
         fab.setOnClickListener(v -> showAddTodoDialog());
 
-        // 처음 테스트용 데이터 넣고 싶은 경우만 주석 해제
-        // seedTestData();
+        // seedTestData(); // 필요하면 한 번만 호출
 
         loadTodos();
         updateBeerProgress();
+        updateStreakPlaceholder(); // 지금은 가짜 값만
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // 다시 화면에 돌아왔을 때도 데이터/진행도 갱신
         loadTodos();
         updateBeerProgress();
     }
 
-    // 오늘 날짜의 Todo 목록을 DB에서 읽어서 RecyclerView에 반영
     private void loadTodos() {
         ArrayList<TodoItem> list = dbHelper.getTodosByDate(today);
         adapter.setItems(list);
     }
 
-    // 오늘의 totalWeight, doneWeight 기반으로 맥주잔 진행도 업데이트
     private void updateBeerProgress() {
         if (beerClipDrawable == null) return;
 
@@ -110,38 +109,34 @@ public class MainActivity extends AppCompatActivity {
         int done = dbHelper.getDoneWeightForDate(today);
 
         if (total <= 0) {
-            // 할 일이 없으면 빈 잔
             animateBeerLevel(0);
+            if (textProgress != null) textProgress.setText("0%");
             return;
         }
 
         float ratio = done / (float) total;  // 0.0 ~ 1.0
-        if (ratio < 0) ratio = 0;
-        if (ratio > 1) ratio = 1;
+        ratio = Math.max(0f, Math.min(1f, ratio));
 
-        int targetLevel = (int) (ratio * 10000); // ClipDrawable level: 0~10000
+        int targetLevel = (int) (ratio * 10000);
         animateBeerLevel(targetLevel);
+
+        int percent = Math.round(ratio * 100);
+        if (textProgress != null) {
+            textProgress.setText(percent + "%");
+        }
     }
 
-    // ClipDrawable level을 부드럽게 변경
     private void animateBeerLevel(int targetLevel) {
         if (beerClipDrawable == null) return;
 
         ValueAnimator animator = ValueAnimator.ofInt(currentLevel, targetLevel);
-        animator.setDuration(500); // 0.5초 정도
+        animator.setDuration(500);
         animator.addUpdateListener(animation -> {
             int level = (int) animation.getAnimatedValue();
             beerClipDrawable.setLevel(level);
             currentLevel = level;
         });
         animator.start();
-    }
-
-    // 테스트용으로 한 번만 호출해서 초기 데이터 심고 싶을 때 사용
-    private void seedTestData() {
-        dbHelper.insertTodo(today, "C++ 알고리즘 공부", 5);
-        dbHelper.insertTodo(today, "빨래 널기", 1);
-        dbHelper.insertTodo(today, "Flutter UI 작업", 3);
     }
 
     private void showAddTodoDialog() {
@@ -153,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
         pickerWeight.setMinValue(1);
         pickerWeight.setMaxValue(5);
-        pickerWeight.setValue(3); // 기본값
+        pickerWeight.setValue(3);
 
         new AlertDialog.Builder(this)
                 .setTitle("할 일 추가")
@@ -166,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(this, "제목을 입력해 주세요.", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     dbHelper.insertTodo(today, title, weight);
                     loadTodos();
                     updateBeerProgress();
@@ -174,4 +168,14 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("취소", null)
                 .show();
     }
+
+    // 스트릭 로직은 아직 미구현 – 일단 자리만 채워두기
+    private void updateStreakPlaceholder() {
+        if (textStreak != null) {
+            textStreak.setText("🔥 0 days"); // 나중에 DB 연결해서 진짜 값으로 바꾸면 됨
+        }
+    }
+
+    // seedTestData()는 기존 그대로 두면 됨
 }
+
