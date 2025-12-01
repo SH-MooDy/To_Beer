@@ -9,14 +9,31 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- 나중에 ClipDrawable 구조로 바꿀 맥주잔 자리 -->
-        <ImageView
-            android:id="@+id/beerImage"
+        <!-- 🔹 맥주잔 영역: 아래에 채워지는 맥주, 위에 잔 윤곽 -->
+        <FrameLayout
+            android:id="@+id/beerContainer"
             android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_height="180dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_launcher_foreground"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="20dp">
+
+            <!-- 맥주 채워지는 부분 (ClipDrawable) -->
+            <ImageView
+                android:id="@+id/imageBeerFill"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/beer_fill"
+                android:scaleType="fitXY" />
+
+            <!-- 잔 윤곽 (지금은 임시로 ic_launcher_foreground 사용, 나중에 beer_outline.png 넣어서 교체 추천) -->
+            <ImageView
+                android:id="@+id/imageBeerOutline"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/beer_outline"
+                android:scaleType="fitCenter" />
+
+        </FrameLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/todoRecycler"

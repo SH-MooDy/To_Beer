@@ -1,8 +1,18 @@
 package com.cookandroid.to_beer.ui;
 
+import android.animation.ValueAnimator;
+import android.graphics.drawable.ClipDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,28 +21,23 @@ import com.cookandroid.to_beer.R;
 import com.cookandroid.to_beer.adapter.TodoAdapter;
 import com.cookandroid.to_beer.db.TodoDatabaseHelper;
 import com.cookandroid.to_beer.model.TodoItem;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.NumberPicker;
-import androidx.appcompat.app.AlertDialog;
-import android.widget.Toast;
-
-
 public class MainActivity extends AppCompatActivity {
 
     private TodoAdapter adapter;
     private TodoDatabaseHelper dbHelper;
     private String today;
-    private ImageView beerImage;
+
+    // 맥주 채움(ClipDrawable)용
+    private ImageView imageBeerFill;
+    private ClipDrawable beerClipDrawable;
+    private int currentLevel = 0; // 0 ~ 10000
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +50,21 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new TodoDatabaseHelper(this);
 
-        beerImage = findViewById(R.id.beerImage);
+        // 맥주 채워지는 이미지뷰
+        imageBeerFill = findViewById(R.id.imageBeerFill);
+        if (imageBeerFill != null) {
+            Drawable d = imageBeerFill.getDrawable();
+            if (d instanceof ClipDrawable) {
+                beerClipDrawable = (ClipDrawable) d;
+            } else if (d != null) {
+                // 혹시 xml에서 clip 이 아니더라도 안전하게 감싸기
+                beerClipDrawable = new ClipDrawable(d, Gravity.BOTTOM, ClipDrawable.VERTICAL);
+                imageBeerFill.setImageDrawable(beerClipDrawable);
+            }
+            if (beerClipDrawable != null) {
+                beerClipDrawable.setLevel(currentLevel);
+            }
+        }
 
         RecyclerView recyclerView = findViewById(R.id.todoRecycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -57,13 +76,12 @@ public class MainActivity extends AppCompatActivity {
             loadTodos();
             updateBeerProgress();
         });
-
         recyclerView.setAdapter(adapter);
 
         FloatingActionButton fab = findViewById(R.id.fabAddTodo);
         fab.setOnClickListener(v -> showAddTodoDialog());
 
-        // 처음 실행 시 테스트용 데이터 넣고 싶으면 여기에 한 번만 insert
+        // 처음 테스트용 데이터 넣고 싶은 경우만 주석 해제
         // seedTestData();
 
         loadTodos();
@@ -86,19 +104,37 @@ public class MainActivity extends AppCompatActivity {
 
     // 오늘의 totalWeight, doneWeight 기반으로 맥주잔 진행도 업데이트
     private void updateBeerProgress() {
+        if (beerClipDrawable == null) return;
+
         int total = dbHelper.getTotalWeightForDate(today);
         int done = dbHelper.getDoneWeightForDate(today);
 
         if (total <= 0) {
-            // 할 일이 없으면 거의 빈 잔처럼 표시
-            beerImage.setAlpha(0.2f);
+            // 할 일이 없으면 빈 잔
+            animateBeerLevel(0);
             return;
         }
 
         float ratio = done / (float) total;  // 0.0 ~ 1.0
-        // 임시: alpha로만 진행도 표현 (나중에 ClipDrawable/애니메이션으로 교체 예정)
-        float alpha = 0.2f + 0.8f * ratio;
-        beerImage.setAlpha(alpha);
+        if (ratio < 0) ratio = 0;
+        if (ratio > 1) ratio = 1;
+
+        int targetLevel = (int) (ratio * 10000); // ClipDrawable level: 0~10000
+        animateBeerLevel(targetLevel);
+    }
+
+    // ClipDrawable level을 부드럽게 변경
+    private void animateBeerLevel(int targetLevel) {
+        if (beerClipDrawable == null) return;
+
+        ValueAnimator animator = ValueAnimator.ofInt(currentLevel, targetLevel);
+        animator.setDuration(500); // 0.5초 정도
+        animator.addUpdateListener(animation -> {
+            int level = (int) animation.getAnimatedValue();
+            beerClipDrawable.setLevel(level);
+            currentLevel = level;
+        });
+        animator.start();
     }
 
     // 테스트용으로 한 번만 호출해서 초기 데이터 심고 싶을 때 사용
@@ -138,5 +174,4 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("취소", null)
                 .show();
     }
-
 }
