@@ -152,4 +152,37 @@ public class TodoDatabaseHelper extends SQLiteOpenHelper {
         }
         return done;
     }
+
+    // 오늘 날짜의 전체 할 일 개수
+    public int getTodoCountByDate(String date) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT COUNT(*) FROM TodoItem WHERE date = ?",
+                new String[]{date}
+        );
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        db.close();
+        return count;
+    }
+
+    // 오늘 날짜의 "완료"된 할 일 개수
+    public int getDoneCountByDate(String date) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT COUNT(*) FROM TodoItem WHERE date = ? AND is_complete = 1",
+                new String[]{date}
+        );
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        db.close();
+        return count;
+    }
+
 }
