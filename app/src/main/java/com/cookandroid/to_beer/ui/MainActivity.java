@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
         textStreak = findViewById(R.id.textStreak);
         lottieFoam = findViewById(R.id.lottieFoam);
 
+        textProgress.setOnClickListener(v -> showTodayStatsDialog());
+
         if (lottieFoam != null) {
             lottieFoam.setVisibility(View.GONE);
         }
@@ -315,6 +317,31 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    // 오늘 통계 다이얼로그
+    private void showTodayStatsDialog() {
+        int totalWeight = dbHelper.getTotalWeightForDate(today);
+        int doneWeight  = dbHelper.getDoneWeightForDate(today);
+        int totalCount  = dbHelper.getTodoCountByDate(today);
+        int doneCount   = dbHelper.getDoneCountByDate(today);
+
+        int percent = 0;
+        if (totalWeight > 0) {
+            percent = Math.round(doneWeight * 100f / totalWeight);
+        }
+
+        String message =
+                "오늘 등록한 할 일: " + totalCount + "개\n" +
+                        "완료한 할 일: " + doneCount + "개\n\n" +
+                        "총 목표 weight: " + totalWeight + "\n" +
+                        "완료 weight: " + doneWeight + "\n" +
+                        "달성률: " + percent + "%";
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("오늘의 통계")
+                .setMessage(message)
+                .setPositiveButton("확인", null)
+                .show();
+    }
 
     // 테스트 데이터
 //    private void seedTestData() {
