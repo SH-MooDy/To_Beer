@@ -91,6 +91,11 @@ public class MainActivity extends AppCompatActivity {
             updateBeerProgress();
             updateStreak();
         });
+
+        adapter.setOnItemLongClickListener(item -> {
+            showEditDeleteDialog(item);
+        });
+
         recyclerView.setAdapter(adapter);
 
         FloatingActionButton fab = findViewById(R.id.fabAddTodo);
@@ -254,6 +259,62 @@ public class MainActivity extends AppCompatActivity {
             textStreak.setText("🔥 " + streak + " days");
         }
     }
+
+    private void showEditDeleteDialog(TodoItem item) {
+        String[] options = {"수정", "삭제"};
+
+        new AlertDialog.Builder(this)
+                .setTitle(item.getTitle())
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        // 수정
+                        showEditTodoDialog(item);
+                    } else if (which == 1) {
+                        // 삭제
+                        dbHelper.deleteTodo(item.getId());
+                        loadTodos();
+                        updateBeerProgress();
+                        updateStreak();
+                        Toast.makeText(this, "삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .show();
+    }
+
+    private void showEditTodoDialog(TodoItem item) {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View view = inflater.inflate(R.layout.dialog_add_todo, null);
+
+        EditText editTitle = view.findViewById(R.id.editTitle);
+        NumberPicker pickerWeight = view.findViewById(R.id.pickerWeight);
+
+        // 기존 값 세팅
+        editTitle.setText(item.getTitle());
+        pickerWeight.setMinValue(1);
+        pickerWeight.setMaxValue(5);
+        pickerWeight.setValue(item.getWeight());
+
+        new AlertDialog.Builder(this)
+                .setTitle("할 일 수정")
+                .setView(view)
+                .setPositiveButton("저장", (dialog, which) -> {
+                    String newTitle = editTitle.getText().toString().trim();
+                    int newWeight = pickerWeight.getValue();
+
+                    if (newTitle.isEmpty()) {
+                        Toast.makeText(this, "제목을 입력해 주세요.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    dbHelper.updateTodo(item.getId(), newTitle, newWeight);
+                    loadTodos();
+                    updateBeerProgress();
+                    updateStreak();
+                })
+                .setNegativeButton("취소", null)
+                .show();
+    }
+
 
     // 테스트 데이터
 //    private void seedTestData() {
