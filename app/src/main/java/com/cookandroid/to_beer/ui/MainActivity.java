@@ -1,5 +1,6 @@
 package com.cookandroid.to_beer.ui;
 
+import android.content.SharedPreferences;
 import android.animation.ValueAnimator;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
@@ -33,6 +34,8 @@ import java.util.Locale;
 
 import android.widget.ImageButton;
 import java.text.ParseException;
+import android.content.Intent;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,10 +56,14 @@ public class MainActivity extends AppCompatActivity {
     private TextView textProgress;
     private TextView textStreak;
     private TextView textCurrentDate;
+    private TextView textBestStreak;
 
     // 거품 애니메이션
     private LottieAnimationView lottieFoam;
     private boolean isFull = false;
+
+    private SharedPreferences prefs;
+    private int bestStreak = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,11 +75,29 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new TodoDatabaseHelper(this);
 
+        prefs = getSharedPreferences("to_beer_prefs", MODE_PRIVATE);
+        bestStreak = prefs.getInt("best_streak", 0);
+
         imageBeerFill = findViewById(R.id.imageBeerFill);
         textProgress  = findViewById(R.id.textProgress);
         textStreak    = findViewById(R.id.textStreak);
         textCurrentDate = findViewById(R.id.textCurrentDate);
+        textBestStreak  = findViewById(R.id.textBestStreak);
         lottieFoam    = findViewById(R.id.lottieFoam);
+
+        // 기존 오늘 통계 팝업
+        textProgress.setOnClickListener(v -> showTodayStatsDialog());
+
+        // 길게 누르면 주간 통계 액티비티로 이동
+        textProgress.setOnLongClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
+            startActivity(intent);
+            return true;
+        });
+
+        if (textBestStreak != null) {
+            textBestStreak.setText("🏆 Best: " + bestStreak + " days");
+        }
 
         textCurrentDate.setText(currentDate);
 
@@ -292,6 +317,34 @@ public class MainActivity extends AppCompatActivity {
             textStreak.setText("🔥 1 day");
         } else {
             textStreak.setText("🔥 " + streak + " days");
+        }
+
+        // 최고 스트릭 갱신 체크
+        if (streak > bestStreak) {
+            bestStreak = streak;
+            // SharedPreferences에 저장
+            if (prefs != null) {
+                prefs.edit()
+                        .putInt("best_streak", bestStreak)
+                        .apply();
+            }
+
+            // UI 갱신
+            if (textBestStreak != null) {
+                textBestStreak.setText("🏆 Best: " + bestStreak + " days");
+            }
+
+            // 신기록일 때만 축하 토스트/메시지
+            if (streak > 0) {
+                Toast.makeText(this,
+                        "🎉 새 기록! " + bestStreak + "일 연속 100% 달성!",
+                        Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            // 기존 기록 유지 시에도 UI는 최신 값 보여주기
+            if (textBestStreak != null) {
+                textBestStreak.setText("🏆 Best: " + bestStreak + " days");
+            }
         }
     }
 
