@@ -1,6 +1,5 @@
 package com.cookandroid.to_beer.ui;
 
-import android.widget.TextView;
 import android.animation.ValueAnimator;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
@@ -11,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.cookandroid.to_beer.R;
 import com.cookandroid.to_beer.adapter.TodoAdapter;
 import com.cookandroid.to_beer.db.TodoDatabaseHelper;
@@ -45,6 +46,10 @@ public class MainActivity extends AppCompatActivity {
     // (나중용) 스트릭 텍스트
     private TextView textStreak;
 
+    private LottieAnimationView lottieFoam;
+    private boolean isFull = false;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +62,12 @@ public class MainActivity extends AppCompatActivity {
         imageBeerFill = findViewById(R.id.imageBeerFill);
         textProgress = findViewById(R.id.textProgress);
         textStreak = findViewById(R.id.textStreak);
+        lottieFoam = findViewById(R.id.lottieFoam);
+
+        // foam은 기본은 숨김
+        if (lottieFoam != null) {
+            lottieFoam.setVisibility(View.GONE);
+        }
 
         // ClipDrawable 초기화
         if (imageBeerFill != null) {
@@ -123,6 +134,42 @@ public class MainActivity extends AppCompatActivity {
         int percent = Math.round(ratio * 100);
         if (textProgress != null) {
             textProgress.setText(percent + "%");
+        }
+
+        // 100% 달성 시 거품 애니메이션
+        if (ratio >= 1f) {
+            if (!isFull && lottieFoam != null) {
+                isFull = true;
+
+                lottieFoam.setVisibility(View.VISIBLE);
+                lottieFoam.setAlpha(0f);      // 처음엔 완전 투명
+                lottieFoam.playAnimation();   // 애니 시작
+
+                lottieFoam.setScaleX(0.9f);
+                lottieFoam.setScaleY(0.9f);
+
+                lottieFoam.animate()
+                        .alpha(1f)
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(700)
+                        .start();
+
+            }
+        } else {
+            if (isFull && lottieFoam != null) {
+                isFull = false;
+
+                // 알파를 0까지 내리면서 서서히 사라지게
+                lottieFoam.animate()
+                        .alpha(0f)
+                        .setDuration(400)
+                        .withEndAction(() -> {
+                            lottieFoam.cancelAnimation();
+                            lottieFoam.setVisibility(View.GONE);
+                        })
+                        .start();
+            }
         }
     }
 
