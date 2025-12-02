@@ -23,10 +23,20 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.TodoViewHolder
         void onItemCheckChanged(TodoItem item, boolean isChecked);
     }
 
-    private OnItemCheckChangedListener listener;
+    public interface OnItemLongClickListener {
+        void onItemLongClick(TodoItem item);
+    }
+
+    private OnItemCheckChangedListener checkListener;
+    private OnItemLongClickListener longClickListener;
 
     public TodoAdapter(OnItemCheckChangedListener listener) {
-        this.listener = listener;
+        this.checkListener = listener;
+    }
+
+    // 롱클릭 리스너 설정
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.longClickListener = listener;
     }
 
     public void setItems(ArrayList<TodoItem> list) {
@@ -46,24 +56,22 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.TodoViewHolder
     public void onBindViewHolder(@NonNull TodoViewHolder holder, int position) {
         TodoItem item = items.get(position);
 
-        // 리스너 중복 호출 방지
+        // 리스너 중복 방지: 먼저 null로
         holder.checkTodo.setOnCheckedChangeListener(null);
 
         holder.textTitle.setText(item.getTitle());
         holder.textWeight.setText("Weight: " + item.getWeight());
         holder.checkTodo.setChecked(item.getIsComplete() == 1);
 
-        // ✔ weight 만큼 🍺🍺🍺 생성
+        // weight 만큼 🍺 찍기
         int w = item.getWeight();
         if (w < 1) w = 1;
-        if (w > 5) w = 5; // 혹시 모를 값 방어
+        if (w > 5) w = 5;
         StringBuilder beer = new StringBuilder();
-        for (int i = 0; i < w; i++) {
-            beer.append("🍺");
-        }
+        for (int i = 0; i < w; i++) beer.append("🍺");
         holder.textBeerIcons.setText(beer.toString());
 
-        // ✔ 완료 스타일 (취소선 + 색 연하게)
+        // 완료 스타일
         if (item.getIsComplete() == 1) {
             holder.textTitle.setPaintFlags(
                     holder.textTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -74,10 +82,19 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.TodoViewHolder
             holder.textTitle.setTextColor(0xFFFFFFFF);
         }
 
+        // 체크박스 변경 리스너
         holder.checkTodo.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (listener != null) {
-                listener.onItemCheckChanged(item, isChecked);
+            if (checkListener != null) {
+                checkListener.onItemCheckChanged(item, isChecked);
             }
+        });
+
+        // 롱클릭 리스너
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onItemLongClick(item);
+            }
+            return true;
         });
     }
 

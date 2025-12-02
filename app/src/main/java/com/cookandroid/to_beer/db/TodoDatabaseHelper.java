@@ -94,10 +94,23 @@ public class TodoDatabaseHelper extends SQLiteOpenHelper {
         db.update(TABLE_TODO, values, COL_ID + "=?", new String[]{String.valueOf(id)});
     }
 
-    // (선택) 삭제
+    // 제목 + weight 수정
+    public void updateTodo(int id, String title, int weight) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("title", title);
+        values.put("weight", weight);
+
+        db.update("TodoItem", values, "id = ?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+
+    // 할 일 삭제
     public void deleteTodo(int id) {
-        SQLiteDatabase db = getWritableDatabase();
-        db.delete(TABLE_TODO, COL_ID + "=?", new String[]{String.valueOf(id)});
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("TodoItem", "id = ?", new String[]{String.valueOf(id)});
+        db.close();
     }
 
     // 오늘 전체 weight 합계
