@@ -31,11 +31,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import android.widget.ImageButton;
+import java.text.ParseException;
+
 public class MainActivity extends AppCompatActivity {
 
     private TodoAdapter adapter;
     private TodoDatabaseHelper dbHelper;
     private String today;
+    private String currentDate;
 
     private final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -48,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     // 텍스트들
     private TextView textProgress;
     private TextView textStreak;
+    private TextView textCurrentDate;
 
     // 거품 애니메이션
     private LottieAnimationView lottieFoam;
@@ -59,13 +64,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         today = dateFormat.format(new Date());
+        currentDate = today;
+
         dbHelper = new TodoDatabaseHelper(this);
 
         imageBeerFill = findViewById(R.id.imageBeerFill);
-        textProgress = findViewById(R.id.textProgress);
-        textStreak = findViewById(R.id.textStreak);
-        lottieFoam = findViewById(R.id.lottieFoam);
+        textProgress  = findViewById(R.id.textProgress);
+        textStreak    = findViewById(R.id.textStreak);
+        textCurrentDate = findViewById(R.id.textCurrentDate);
+        lottieFoam    = findViewById(R.id.lottieFoam);
 
+        textCurrentDate.setText(currentDate);
+
+        // 날짜 이동 버튼
+        ImageButton btnPrevDate = findViewById(R.id.btnPrevDate);
+        ImageButton btnNextDate = findViewById(R.id.btnNextDate);
+
+        btnPrevDate.setOnClickListener(v -> changeDate(-1)); // 하루 전
+        btnNextDate.setOnClickListener(v -> changeDate(1));  // 하루 후
+
+        // 진행률 텍스트 눌렀을 때 통계 다이얼로그
         textProgress.setOnClickListener(v -> showTodayStatsDialog());
 
         if (lottieFoam != null) {
@@ -113,14 +131,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        today = dateFormat.format(new Date());
+        currentDate = today;
+        if (textCurrentDate != null) {
+            textCurrentDate.setText(currentDate);
+        }
         loadTodos();
         updateBeerProgress();
         updateStreak();
     }
 
+
     // 오늘 날짜의 할 일 목록을 불러와서 어댑터에 반영
     private void loadTodos() {
-        ArrayList<TodoItem> list = dbHelper.getTodosByDate(today);
+        ArrayList<TodoItem> list = dbHelper.getTodosByDate(currentDate);
         adapter.setItems(list);
     }
 
@@ -128,12 +152,21 @@ public class MainActivity extends AppCompatActivity {
     private void updateBeerProgress() {
         if (beerClipDrawable == null) return;
 
-        int total = dbHelper.getTotalWeightForDate(today);
-        int done = dbHelper.getDoneWeightForDate(today);
+        int total = dbHelper.getTotalWeightForDate(currentDate);
+        int done  = dbHelper.getDoneWeightForDate(currentDate);
 
         if (total <= 0) {
+            // 맥주 게이지 0으로
             animateBeerLevel(0);
             if (textProgress != null) textProgress.setText("0%");
+
+            // 거품도 반드시 꺼준다
+            if (lottieFoam != null) {
+                isFull = false;
+                lottieFoam.cancelAnimation();
+                lottieFoam.setAlpha(0f);
+                lottieFoam.setVisibility(View.GONE);
+            }
             return;
         }
 
@@ -219,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(this, "제목을 입력해 주세요.", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    dbHelper.insertTodo(today, title, weight);
+                    dbHelper.insertTodo(currentDate, title, weight);
                     loadTodos();
                     updateBeerProgress();
                     updateStreak();
@@ -319,10 +352,10 @@ public class MainActivity extends AppCompatActivity {
 
     // 오늘 통계 다이얼로그
     private void showTodayStatsDialog() {
-        int totalWeight = dbHelper.getTotalWeightForDate(today);
-        int doneWeight  = dbHelper.getDoneWeightForDate(today);
-        int totalCount  = dbHelper.getTodoCountByDate(today);
-        int doneCount   = dbHelper.getDoneCountByDate(today);
+        int totalWeight = dbHelper.getTotalWeightForDate(currentDate);
+        int doneWeight  = dbHelper.getDoneWeightForDate(currentDate);
+        int totalCount  = dbHelper.getTodoCountByDate(currentDate);
+        int doneCount   = dbHelper.getDoneCountByDate(currentDate);
 
         int percent = 0;
         if (totalWeight > 0) {
@@ -330,7 +363,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String message =
-                "오늘 등록한 할 일: " + totalCount + "개\n" +
+                currentDate + " 기준\n\n" +
+                        "오늘 등록한 할 일: " + totalCount + "개\n" +
                         "완료한 할 일: " + doneCount + "개\n\n" +
                         "총 목표 weight: " + totalWeight + "\n" +
                         "완료 weight: " + doneWeight + "\n" +
@@ -343,7 +377,29 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    // 테스트 데이터
+    private void changeDate(int deltaDays) {
+        try {
+            Date current = dateFormat.parse(currentDate);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(current);
+            cal.add(Calendar.DAY_OF_YEAR, deltaDays);
+
+            currentDate = dateFormat.format(cal.getTime());
+            if (textCurrentDate != null) {
+                textCurrentDate.setText(currentDate);
+            }
+
+            loadTodos();
+            updateBeerProgress();
+            // 스트릭은 "오늘 기준 연속 100% 일수"라서 그대로 두고,
+            // 원하면 여기서도 updateStreak()를 호출해도 됨
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+     //테스트 데이터
 //    private void seedTestData() {
 //        dbHelper.insertTodo(today, "C++ 알고리즘 공부", 5);
 //        dbHelper.insertTodo(today, "빨래 널기", 1);
