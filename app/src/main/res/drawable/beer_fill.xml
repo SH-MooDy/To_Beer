@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <clip xmlns:android="http://schemas.android.com/apk/res/android"
-    android:drawable="@color/beer_yellow"
     android:clipOrientation="vertical"
-    android:gravity="bottom" />
+    android:gravity="bottom">
+
+    <shape android:shape="rectangle">
+        <!-- 위쪽은 직선, 아래쪽만 완만한 곡선 -->
+        <corners
+            android:topLeftRadius="0dp"
+            android:topRightRadius="0dp"
+            android:bottomLeftRadius="27dp"
+            android:bottomRightRadius="27dp" />
+        <solid android:color="@color/beer_yellow" />
+    </shape>
+
+</clip>

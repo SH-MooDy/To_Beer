@@ -9,7 +9,7 @@
     <CheckBox
         android:id="@+id/checkTodo"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -18,21 +18,32 @@
         android:layout_height="wrap_content"
         android:layout_weight="1">
 
+        <!-- 제목 -->
         <TextView
             android:id="@+id/textTitle"
             android:text="Todo Title"
             android:textSize="16sp"
+            android:textColor="#FFFFFF"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
+        <!-- 아래 Weight 숫자 -->
         <TextView
             android:id="@+id/textWeight"
             android:text="Weight: 3"
-            android:textColor="#888888"
+            android:textColor="#BBBBBB"
             android:textSize="13sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
+    <!-- 오른쪽: 가중치만큼 맥주 아이콘 텍스트 -->
+    <TextView
+        android:id="@+id/textBeerIcons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🍺🍺"
+        android:textSize="16sp"
+        android:paddingStart="8dp"
+        android:paddingEnd="4dp" />
 </LinearLayout>
