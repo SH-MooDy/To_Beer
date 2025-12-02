@@ -27,6 +27,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -36,27 +37,28 @@ public class MainActivity extends AppCompatActivity {
     private TodoDatabaseHelper dbHelper;
     private String today;
 
+    private final SimpleDateFormat dateFormat =
+            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
     // 맥주 채움(ClipDrawable)용
     private ImageView imageBeerFill;
     private ClipDrawable beerClipDrawable;
     private int currentLevel = 0; // 0 ~ 10000
 
-    // 진행률 텍스트
+    // 텍스트들
     private TextView textProgress;
-    // (나중용) 스트릭 텍스트
     private TextView textStreak;
 
+    // 거품 애니메이션
     private LottieAnimationView lottieFoam;
     private boolean isFull = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                .format(new Date());
+        today = dateFormat.format(new Date());
         dbHelper = new TodoDatabaseHelper(this);
 
         imageBeerFill = findViewById(R.id.imageBeerFill);
@@ -64,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
         textStreak = findViewById(R.id.textStreak);
         lottieFoam = findViewById(R.id.lottieFoam);
 
-        // foam은 기본은 숨김
         if (lottieFoam != null) {
             lottieFoam.setVisibility(View.GONE);
         }
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
             dbHelper.updateTodoComplete(item.getId(), isChecked);
             loadTodos();
             updateBeerProgress();
+            updateStreak();
         });
         recyclerView.setAdapter(adapter);
 
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
         loadTodos();
         updateBeerProgress();
-        updateStreakPlaceholder(); // 지금은 가짜 값만
+        updateStreak();
     }
 
     @Override
@@ -106,13 +108,16 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         loadTodos();
         updateBeerProgress();
+        updateStreak();
     }
 
+    // 오늘 날짜의 할 일 목록을 불러와서 어댑터에 반영
     private void loadTodos() {
         ArrayList<TodoItem> list = dbHelper.getTodosByDate(today);
         adapter.setItems(list);
     }
 
+    // 맥주잔 진행도 + 거품 애니메이션
     private void updateBeerProgress() {
         if (beerClipDrawable == null) return;
 
@@ -136,17 +141,16 @@ public class MainActivity extends AppCompatActivity {
             textProgress.setText(percent + "%");
         }
 
-        // 100% 달성 시 거품 애니메이션
+        // 100% 달성 시 거품 애니메이션 (서서히 등장/사라짐)
         if (ratio >= 1f) {
             if (!isFull && lottieFoam != null) {
                 isFull = true;
 
                 lottieFoam.setVisibility(View.VISIBLE);
-                lottieFoam.setAlpha(0f);      // 처음엔 완전 투명
-                lottieFoam.playAnimation();   // 애니 시작
-
+                lottieFoam.setAlpha(0f);
                 lottieFoam.setScaleX(0.9f);
                 lottieFoam.setScaleY(0.9f);
+                lottieFoam.playAnimation();
 
                 lottieFoam.animate()
                         .alpha(1f)
@@ -154,13 +158,11 @@ public class MainActivity extends AppCompatActivity {
                         .scaleY(1f)
                         .setDuration(700)
                         .start();
-
             }
         } else {
             if (isFull && lottieFoam != null) {
                 isFull = false;
 
-                // 알파를 0까지 내리면서 서서히 사라지게
                 lottieFoam.animate()
                         .alpha(0f)
                         .setDuration(400)
@@ -173,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // ClipDrawable 레벨 애니메이션
     private void animateBeerLevel(int targetLevel) {
         if (beerClipDrawable == null) return;
 
@@ -186,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
         animator.start();
     }
 
+    // 할 일 추가 다이얼로그
     private void showAddTodoDialog() {
         LayoutInflater inflater = LayoutInflater.from(this);
         View view = inflater.inflate(R.layout.dialog_add_todo, null);
@@ -211,18 +215,50 @@ public class MainActivity extends AppCompatActivity {
                     dbHelper.insertTodo(today, title, weight);
                     loadTodos();
                     updateBeerProgress();
+                    updateStreak();
                 })
                 .setNegativeButton("취소", null)
                 .show();
     }
 
-    // 스트릭 로직은 아직 미구현 – 일단 자리만 채워두기
-    private void updateStreakPlaceholder() {
-        if (textStreak != null) {
-            textStreak.setText("🔥 0 days"); // 나중에 DB 연결해서 진짜 값으로 바꾸면 됨
+    // 연속 달성일(streak) 계산
+    private void updateStreak() {
+        if (textStreak == null) return;
+
+        // 오늘 날짜 기준으로 뒤로 하루씩 줄여가며 검사
+        Calendar cal = Calendar.getInstance();
+        int streak = 0;
+
+        // 최대 365일만 검사
+        for (int i = 0; i < 365; i++) {
+            String dateStr = dateFormat.format(cal.getTime());
+
+            int total = dbHelper.getTotalWeightForDate(dateStr);
+            int done = dbHelper.getDoneWeightForDate(dateStr);
+
+            // 그날 등록한 할 일(weight) 전체를 다 끝낸 날만 연속 일수로 인정
+            if (total > 0 && done >= total) {
+                streak++;
+                cal.add(Calendar.DAY_OF_YEAR, -1); // 하루 전으로 이동
+            } else {
+                break;
+            }
+        }
+
+        // 텍스트 표시
+        if (streak <= 0) {
+            textStreak.setText("🔥 0 days");
+        } else if (streak == 1) {
+            textStreak.setText("🔥 1 day");
+        } else {
+            textStreak.setText("🔥 " + streak + " days");
         }
     }
 
-    // seedTestData()는 기존 그대로 두면 됨
+    // 테스트 데이터
+//    private void seedTestData() {
+//        dbHelper.insertTodo(today, "C++ 알고리즘 공부", 5);
+//        dbHelper.insertTodo(today, "빨래 널기", 1);
+//        dbHelper.insertTodo(today, "Flutter UI 작업", 3);
+//    }
 }
-
