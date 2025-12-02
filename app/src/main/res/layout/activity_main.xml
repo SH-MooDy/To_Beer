@@ -54,8 +54,11 @@
         <!-- 아래: 채워지는 맥주 (ClipDrawable) -->
         <ImageView
             android:id="@+id/imageBeerFill"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="90dp"
+            android:layout_height="180dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="15dp"
+            android:layout_marginStart="-12dp"
             android:src="@drawable/beer_fill"
             android:scaleType="fitXY" />
 
@@ -64,6 +67,7 @@
             android:id="@+id/imageBeerOutline"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:adjustViewBounds="true"
             android:src="@drawable/beer_outline"
             android:scaleType="fitCenter" />
     </FrameLayout>
