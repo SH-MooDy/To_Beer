@@ -1,18 +1,19 @@
 package com.cookandroid.to_beer.ui;
 
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.View;
-
-import android.content.SharedPreferences;
 import android.animation.ValueAnimator;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,16 +32,13 @@ import com.cookandroid.to_beer.adapter.TodoAdapter;
 import com.cookandroid.to_beer.db.TodoDatabaseHelper;
 import com.cookandroid.to_beer.model.TodoItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-
-import android.widget.ImageButton;
-import java.text.ParseException;
-import android.content.Intent;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -66,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
     private LottieAnimationView lottieFoam;
     private boolean isFull = false;
 
+    // 축하 애니메이션
+    private LottieAnimationView lottieCongrats;
+
+
     private SharedPreferences prefs;
     private int bestStreak = 0;
 
@@ -73,6 +77,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int SWIPE_THRESHOLD = 100;         // 최소 이동 거리(px)
     private static final int SWIPE_VELOCITY_THRESHOLD = 100; // 최소 속도
+
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private ImageButton btnMenu;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +102,34 @@ public class MainActivity extends AppCompatActivity {
         textCurrentDate = findViewById(R.id.textCurrentDate);
         textBestStreak  = findViewById(R.id.textBestStreak);
         lottieFoam    = findViewById(R.id.lottieFoam);
+        lottieCongrats = findViewById(R.id.lottieCongrats);
+
+        drawerLayout   = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navigationView);
+        btnMenu        = findViewById(R.id.btnMenu);
+
+        // 햄버거 버튼 클릭 => 사이드 드로어 열기
+        btnMenu.setOnClickListener(v -> {
+            if (drawerLayout != null) {
+                drawerLayout.openDrawer(GravityCompat.START);
+
+            }
+        });
+
+        // 사이드 메뉴 아이템 클릭 처리
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.menu_weekly_stats) {
+                // 주간 통계 화면으로 이동
+                Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
+                startActivity(intent);
+            }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+
+
 
         View rootLayout = findViewById(R.id.rootLayout);
 
@@ -133,15 +170,8 @@ public class MainActivity extends AppCompatActivity {
         // 루트 레이아웃에 터치 전달
         rootLayout.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
 
-        // 기존 오늘 통계 팝업
+        // 오늘 통계 팝업
         textProgress.setOnClickListener(v -> showTodayStatsDialog());
-
-        // 길게 누르면 주간 통계 액티비티로 이동
-        textProgress.setOnLongClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
-            startActivity(intent);
-            return true;
-        });
 
         if (textBestStreak != null) {
             textBestStreak.setText("🏆 Best: " + bestStreak + " days");
@@ -240,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
                 lottieFoam.setAlpha(0f);
                 lottieFoam.setVisibility(View.GONE);
             }
+
             return;
         }
 
@@ -271,6 +302,41 @@ public class MainActivity extends AppCompatActivity {
                         .scaleY(1f)
                         .setDuration(700)
                         .start();
+
+                // 1초 후 축하 애니메이션 실행
+                new Handler().postDelayed(() -> {
+                    if (lottieCongrats != null) {
+                        lottieCongrats.setVisibility(View.VISIBLE);
+                        lottieCongrats.setAlpha(0f);
+                        lottieCongrats.setScaleX(0.8f);
+                        lottieCongrats.setScaleY(0.8f);
+
+                        lottieCongrats.playAnimation();
+
+                        lottieCongrats.animate()
+                                .alpha(1f)
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(500)
+                                .start();
+
+                        // 축하 애니메이션 3초 후 자동 사라짐
+                        new Handler().postDelayed(() -> {
+                            lottieCongrats.animate()
+                                    .alpha(0f)
+                                    .setDuration(600)
+                                    .withEndAction(() -> {
+                                        lottieCongrats.setVisibility(View.GONE);
+                                    })
+                                    .start();
+                        }, 2500); // 3초 뒤 사라짐
+                    }
+
+                    Toast.makeText(MainActivity.this,
+                            "오늘 할 일 완료! 🎉", Toast.LENGTH_SHORT).show();
+
+                }, 800);
+
             }
         } else {
             if (isFull && lottieFoam != null) {
