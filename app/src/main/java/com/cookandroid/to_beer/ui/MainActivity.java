@@ -1,5 +1,9 @@
 package com.cookandroid.to_beer.ui;
 
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
+
 import android.content.SharedPreferences;
 import android.animation.ValueAnimator;
 import android.graphics.drawable.ClipDrawable;
@@ -65,6 +69,11 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences prefs;
     private int bestStreak = 0;
 
+    private GestureDetector gestureDetector;
+
+    private static final int SWIPE_THRESHOLD = 100;         // 최소 이동 거리(px)
+    private static final int SWIPE_VELOCITY_THRESHOLD = 100; // 최소 속도
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +93,45 @@ public class MainActivity extends AppCompatActivity {
         textCurrentDate = findViewById(R.id.textCurrentDate);
         textBestStreak  = findViewById(R.id.textBestStreak);
         lottieFoam    = findViewById(R.id.lottieFoam);
+
+        View rootLayout = findViewById(R.id.rootLayout);
+
+        // 제스처 감지기 설정
+        gestureDetector = new GestureDetector(this,
+                new GestureDetector.SimpleOnGestureListener() {
+
+                    @Override
+                    public boolean onDown(MotionEvent e) {
+                        // 반드시 true를 반환해야 이후 이벤트(onFling 등)가 들어온다
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onFling(MotionEvent e1, MotionEvent e2,
+                                           float velocityX, float velocityY) {
+                        float diffX = e2.getX() - e1.getX();
+                        float diffY = e2.getY() - e1.getY();
+
+                        if (Math.abs(diffX) > Math.abs(diffY)
+                                && Math.abs(diffX) > SWIPE_THRESHOLD
+                                && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+
+                            if (diffX > 0) {
+                                // 오른쪽 스와이프 → 이전 날
+                                changeDate(-1);
+                            } else {
+                                // 왼쪽 스와이프 → 다음 날
+                                changeDate(1);
+                            }
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+
+
+        // 루트 레이아웃에 터치 전달
+        rootLayout.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
 
         // 기존 오늘 통계 팝업
         textProgress.setOnClickListener(v -> showTodayStatsDialog());
