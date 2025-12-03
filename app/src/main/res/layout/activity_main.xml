@@ -227,6 +227,10 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="#DD000000"
-        app:menu="@menu/drawer_menu" />
+        app:menu="@menu/drawer_menu"
+        app:headerLayout="@layout/nav_header"
+        app:itemIconSize="32dp"
+        app:itemTextAppearance="@style/NavTextStyle"
+        app:itemVerticalPadding="12dp"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>
