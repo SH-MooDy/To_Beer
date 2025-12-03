@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "To_Beer"
+rootProject.name = "s202112246_lee_seunghoon"
 include(":app")

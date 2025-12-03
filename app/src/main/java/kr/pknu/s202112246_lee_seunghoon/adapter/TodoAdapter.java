@@ -1,4 +1,4 @@
-package com.cookandroid.to_beer.adapter;
+package kr.pknu.s202112246_lee_seunghoon.adapter;
 
 import android.graphics.Paint;
 import android.view.LayoutInflater;
@@ -10,8 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cookandroid.to_beer.R;
-import com.cookandroid.to_beer.model.TodoItem;
+import kr.pknu.s202112246_lee_seunghoon.R;
+import kr.pknu.s202112246_lee_seunghoon.model.TodoItem;
 
 import java.util.ArrayList;
 

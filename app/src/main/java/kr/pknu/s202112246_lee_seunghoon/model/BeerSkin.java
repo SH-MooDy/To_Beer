@@ -1,4 +1,4 @@
-package com.cookandroid.to_beer.model;
+package kr.pknu.s202112246_lee_seunghoon.model;
 
 public enum BeerSkin {
     DEFAULT(0, "기본 라거", "#FFC107", "#FFF4E6", 0),

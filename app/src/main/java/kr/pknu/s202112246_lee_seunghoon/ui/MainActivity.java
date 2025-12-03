@@ -1,4 +1,4 @@
-package com.cookandroid.to_beer.ui;
+package kr.pknu.s202112246_lee_seunghoon.ui;
 
 import android.animation.ValueAnimator;
 import android.content.Intent;
@@ -35,11 +35,11 @@ import com.airbnb.lottie.LottieProperty;
 import com.airbnb.lottie.model.KeyPath;
 import com.airbnb.lottie.value.LottieFrameInfo;
 import com.airbnb.lottie.value.SimpleLottieValueCallback;
-import com.cookandroid.to_beer.R;
-import com.cookandroid.to_beer.adapter.TodoAdapter;
-import com.cookandroid.to_beer.db.TodoDatabaseHelper;
-import com.cookandroid.to_beer.model.BeerSkin;
-import com.cookandroid.to_beer.model.TodoItem;
+import kr.pknu.s202112246_lee_seunghoon.R;
+import kr.pknu.s202112246_lee_seunghoon.adapter.TodoAdapter;
+import kr.pknu.s202112246_lee_seunghoon.db.TodoDatabaseHelper;
+import kr.pknu.s202112246_lee_seunghoon.model.BeerSkin;
+import kr.pknu.s202112246_lee_seunghoon.model.TodoItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 

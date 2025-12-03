@@ -1,4 +1,4 @@
-package com.cookandroid.to_beer.db;
+package kr.pknu.s202112246_lee_seunghoon.db;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.cookandroid.to_beer.model.TodoItem;
+import kr.pknu.s202112246_lee_seunghoon.model.TodoItem;
 
 import java.util.ArrayList;
 

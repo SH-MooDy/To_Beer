@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.cookandroid.to_beer"
+    namespace = "kr.pknu.s202112246_lee_seunghoon"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.cookandroid.to_beer"
+        applicationId = "kr.pknu.s202112246_lee_seunghoon"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

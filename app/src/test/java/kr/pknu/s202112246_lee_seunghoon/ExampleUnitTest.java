@@ -1,4 +1,4 @@
-package com.cookandroid.to_beer;
+package kr.pknu.s202112246_lee_seunghoon;
 
 import org.junit.Test;
 

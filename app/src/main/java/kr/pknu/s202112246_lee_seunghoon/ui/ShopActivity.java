@@ -1,10 +1,10 @@
-package com.cookandroid.to_beer.ui;
+package kr.pknu.s202112246_lee_seunghoon.ui;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cookandroid.to_beer.adapter.SkinAdapter;
-import com.cookandroid.to_beer.model.BeerSkin;
+import kr.pknu.s202112246_lee_seunghoon.adapter.SkinAdapter;
+import kr.pknu.s202112246_lee_seunghoon.model.BeerSkin;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.cookandroid.to_beer.R;
+import kr.pknu.s202112246_lee_seunghoon.R;
 
 public class ShopActivity extends AppCompatActivity {
 

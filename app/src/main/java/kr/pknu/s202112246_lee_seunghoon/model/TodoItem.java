@@ -1,4 +1,4 @@
-package com.cookandroid.to_beer.model;
+package kr.pknu.s202112246_lee_seunghoon.model;
 
 public class TodoItem {
     private int id;

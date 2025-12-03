@@ -1,4 +1,4 @@
-package com.cookandroid.to_beer.ui;
+package kr.pknu.s202112246_lee_seunghoon.ui;
 
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -8,8 +8,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.cookandroid.to_beer.R;
-import com.cookandroid.to_beer.db.TodoDatabaseHelper;
+import kr.pknu.s202112246_lee_seunghoon.R;
+import kr.pknu.s202112246_lee_seunghoon.db.TodoDatabaseHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

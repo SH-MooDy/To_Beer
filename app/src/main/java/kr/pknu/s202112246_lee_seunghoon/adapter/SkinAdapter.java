@@ -1,4 +1,4 @@
-package com.cookandroid.to_beer.adapter;
+package kr.pknu.s202112246_lee_seunghoon.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,8 +12,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cookandroid.to_beer.R;
-import com.cookandroid.to_beer.model.BeerSkin;
+import kr.pknu.s202112246_lee_seunghoon.R;
+import kr.pknu.s202112246_lee_seunghoon.model.BeerSkin;
 
 public class SkinAdapter extends RecyclerView.Adapter<SkinAdapter.SkinViewHolder> {
 
