@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#202020"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 코인 표시 -->
+    <TextView
+        android:id="@+id/textCoinCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="보유 코인: 0개"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+
+    <!-- 스킨 목록 RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerSkins"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="24dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

@@ -2,5 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="beer_yellow">#F4C542</color>
+    <color name="beer_yellow">#F6C453</color>   <!-- 기본 라거 -->
+    <color name="beer_amber">#D1863A</color>    <!-- 에일 느낌 -->
+    <color name="beer_dark">#8B4513</color>     <!-- 흑맥 -->
 </resources>

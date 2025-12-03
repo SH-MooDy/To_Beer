@@ -3,6 +3,10 @@ package com.cookandroid.to_beer.ui;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -27,9 +31,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.airbnb.lottie.LottieProperty;
+import com.airbnb.lottie.model.KeyPath;
+import com.airbnb.lottie.value.LottieFrameInfo;
+import com.airbnb.lottie.value.SimpleLottieValueCallback;
 import com.cookandroid.to_beer.R;
 import com.cookandroid.to_beer.adapter.TodoAdapter;
 import com.cookandroid.to_beer.db.TodoDatabaseHelper;
+import com.cookandroid.to_beer.model.BeerSkin;
 import com.cookandroid.to_beer.model.TodoItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -82,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private ImageButton btnMenu;
 
+    private int coinCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,18 +105,22 @@ public class MainActivity extends AppCompatActivity {
 
         prefs = getSharedPreferences("to_beer_prefs", MODE_PRIVATE);
         bestStreak = prefs.getInt("best_streak", 0);
+        coinCount = prefs.getInt("coin_count", 0);
 
         imageBeerFill = findViewById(R.id.imageBeerFill);
-        textProgress  = findViewById(R.id.textProgress);
-        textStreak    = findViewById(R.id.textStreak);
+        textProgress = findViewById(R.id.textProgress);
+        textStreak = findViewById(R.id.textStreak);
         textCurrentDate = findViewById(R.id.textCurrentDate);
-        textBestStreak  = findViewById(R.id.textBestStreak);
-        lottieFoam    = findViewById(R.id.lottieFoam);
+        textBestStreak = findViewById(R.id.textBestStreak);
+        lottieFoam = findViewById(R.id.lottieFoam);
         lottieCongrats = findViewById(R.id.lottieCongrats);
 
-        drawerLayout   = findViewById(R.id.drawerLayout);
+        drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
-        btnMenu        = findViewById(R.id.btnMenu);
+        btnMenu = findViewById(R.id.btnMenu);
+
+        lottieCongrats.setVisibility(View.GONE);
+        lottieCongrats.setAlpha(0f);
 
         // 햄버거 버튼 클릭 => 사이드 드로어 열기
         btnMenu.setOnClickListener(v -> {
@@ -123,12 +137,15 @@ public class MainActivity extends AppCompatActivity {
                 // 주간 통계 화면으로 이동
                 Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
                 startActivity(intent);
+            } else if (id == R.id.menu_shop) {
+                // 상점으로 이동
+                Intent intent = new Intent(MainActivity.this, ShopActivity.class);
+                startActivity(intent);
             }
 
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
-
 
 
         View rootLayout = findViewById(R.id.rootLayout);
@@ -205,6 +222,8 @@ public class MainActivity extends AppCompatActivity {
             if (beerClipDrawable != null) beerClipDrawable.setLevel(currentLevel);
         }
 
+        applyBeerSkin(); // 스킨 색 적용
+
         RecyclerView recyclerView = findViewById(R.id.todoRecycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -242,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
         loadTodos();
         updateBeerProgress();
         updateStreak();
+        applyBeerSkin();
     }
 
 
@@ -256,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
         if (beerClipDrawable == null) return;
 
         int total = dbHelper.getTotalWeightForDate(currentDate);
-        int done  = dbHelper.getDoneWeightForDate(currentDate);
+        int done = dbHelper.getDoneWeightForDate(currentDate);
 
         if (total <= 0) {
             // 맥주 게이지 0으로
@@ -290,6 +310,9 @@ public class MainActivity extends AppCompatActivity {
             if (!isFull && lottieFoam != null) {
                 isFull = true;
 
+                // 이 날짜가 처음으로 100%면 코인 지급
+                checkAndRewardClear(currentDate);
+
                 lottieFoam.setVisibility(View.VISIBLE);
                 lottieFoam.setAlpha(0f);
                 lottieFoam.setScaleX(0.9f);
@@ -320,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
                                 .setDuration(500)
                                 .start();
 
-                        // 축하 애니메이션 3초 후 자동 사라짐
+                        // 축하 애니메이션 2초 후 자동 사라짐
                         new Handler().postDelayed(() -> {
                             lottieCongrats.animate()
                                     .alpha(0f)
@@ -329,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
                                         lottieCongrats.setVisibility(View.GONE);
                                     })
                                     .start();
-                        }, 2500); // 3초 뒤 사라짐
+                        }, 2000); // 3초 뒤 사라짐
                     }
 
                     Toast.makeText(MainActivity.this,
@@ -520,9 +543,9 @@ public class MainActivity extends AppCompatActivity {
     // 오늘 통계 다이얼로그
     private void showTodayStatsDialog() {
         int totalWeight = dbHelper.getTotalWeightForDate(currentDate);
-        int doneWeight  = dbHelper.getDoneWeightForDate(currentDate);
-        int totalCount  = dbHelper.getTodoCountByDate(currentDate);
-        int doneCount   = dbHelper.getDoneCountByDate(currentDate);
+        int doneWeight = dbHelper.getDoneWeightForDate(currentDate);
+        int totalCount = dbHelper.getTodoCountByDate(currentDate);
+        int doneCount = dbHelper.getDoneCountByDate(currentDate);
 
         int percent = 0;
         if (totalWeight > 0) {
@@ -565,8 +588,76 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // 어떤 날짜(dateStr)가 처음으로 100% 달성되었는지 확인하고, 처음이라면 코인 1개 지급
+    private void checkAndRewardClear(String dateStr) {
+        if (prefs == null) return;
 
-     //테스트 데이터
+        String key = "cleared_" + dateStr;               // 예: cleared_2025-12-04
+        boolean alreadyCleared = prefs.getBoolean(key, false);
+
+        if (!alreadyCleared) {
+            // 아직 보상 안 준 날 → 코인 1개 지급
+            coinCount++;
+
+            prefs.edit()
+                    .putBoolean(key, true)              // 이 날짜는 클리어 처리
+                    .putInt("coin_count", coinCount)    // 코인 개수 저장
+                    .apply();
+
+            // 원하면 여기서 상단에 코인 텍스트 갱신도 가능 (추후 UI 만들면)
+
+            Toast.makeText(this,
+                    "오늘 임무 완료! 코인 1개 획득 🪙",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // 선택된 스킨에 맞게 맥주 색상 적용
+    private void applyBeerSkin() {
+        if (prefs == null) return;
+
+        int skinId = prefs.getInt("selected_skin", 0);
+        BeerSkin skin = BeerSkin.fromId(skinId);
+
+        // 액체 색상
+        int liquidColor = Color.parseColor(skin.liquidColor);
+        imageBeerFill.setColorFilter(
+                new PorterDuffColorFilter(liquidColor, PorterDuff.Mode.SRC_IN)
+        );
+
+        // 거품 색상
+        if (lottieFoam != null) {
+            final int foamColor = Color.parseColor(skin.foamColor);
+            final PorterDuffColorFilter foamFilter =
+                    new PorterDuffColorFilter(foamColor, PorterDuff.Mode.SRC_ATOP);
+
+            // 모든 레이어("**")에 COLOR_FILTER 적용
+            lottieFoam.addValueCallback(
+                    new KeyPath("**"),
+                    LottieProperty.COLOR_FILTER,
+                    new SimpleLottieValueCallback<ColorFilter>() {
+                        @Override
+                        public ColorFilter getValue(LottieFrameInfo<ColorFilter> frameInfo) {
+                            return foamFilter;
+                        }
+                    }
+            );
+        }
+
+    }
+
+
+    private void selectSkin(BeerSkin skin) {
+        prefs.edit()
+                .putInt("selected_skin", skin.id)
+                .apply();
+
+        Toast.makeText(this, skin.name + " 스킨 선택!", Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
+
+    //테스트 데이터
 //    private void seedTestData() {
 //        dbHelper.insertTodo(today, "C++ 알고리즘 공부", 5);
 //        dbHelper.insertTodo(today, "빨래 널기", 1);

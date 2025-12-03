@@ -3,13 +3,12 @@
 
     <item
         android:id="@+id/menu_weekly_stats"
-        android:title="주간 통계" />
+        android:icon="@drawable/ic_chart"
+        android:title="주간 통계"/>
 
-    <!-- 나중에 기능 늘리면 여기 추가 -->
-    <!--
     <item
-        android:id="@+id/menu_settings"
-        android:title="설정" />
-    -->
+        android:id="@+id/menu_shop"
+        android:icon="@drawable/ic_store"
+        android:title="상점"/>
 
 </menu>

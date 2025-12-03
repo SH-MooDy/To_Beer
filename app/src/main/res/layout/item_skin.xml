@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:gravity="center_vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#33000000">
+
+    <!-- 색 미리보기 (음료 컬러) -->
+    <View
+        android:id="@+id/viewColorPreview"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="#FFC107"
+        android:layout_marginEnd="12dp" />
+
+    <!-- 이름 + 가격 -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/textSkinName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="스킨 이름"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/textSkinPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10 코인"
+            android:textSize="13sp"
+            android:textColor="#CCCCCC" />
+    </LinearLayout>
+
+    <!-- 잠금 아이콘 / 상태 텍스트 -->
+    <ImageView
+        android:id="@+id/imageLock"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@android:drawable/ic_lock_lock"
+        android:tint="#FFCC66"
+        android:layout_marginEnd="8dp" />
+
+    <TextView
+        android:id="@+id/textStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="구매"
+        android:textSize="13sp"
+        android:textColor="#FFFFFF" />
+</LinearLayout>
