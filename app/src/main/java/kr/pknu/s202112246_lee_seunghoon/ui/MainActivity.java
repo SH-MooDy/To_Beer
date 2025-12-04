@@ -1,5 +1,8 @@
 package kr.pknu.s202112246_lee_seunghoon.ui;
 
+import android.app.DatePickerDialog;
+import java.util.Date;
+
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -137,6 +140,10 @@ public class MainActivity extends AppCompatActivity {
                 // 주간 통계 화면으로 이동
                 Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
                 startActivity(intent);
+            } else if (id == R.id.menu_calendar) {
+                // 달성 캘린더로 이동
+                Intent intent = new Intent(MainActivity.this, StreakCalendarActivity.class);
+                startActivity(intent);
             } else if (id == R.id.menu_shop) {
                 // 상점으로 이동
                 Intent intent = new Intent(MainActivity.this, ShopActivity.class);
@@ -199,6 +206,10 @@ public class MainActivity extends AppCompatActivity {
         // 날짜 이동 버튼
         ImageButton btnPrevDate = findViewById(R.id.btnPrevDate);
         ImageButton btnNextDate = findViewById(R.id.btnNextDate);
+
+        // 날짜 바(LinearLayout) 전체를 클릭하면 캘린더 띄우기
+        View dateNav = findViewById(R.id.dateNav);  // LinearLayout
+        dateNav.setOnClickListener(v -> showDatePicker());
 
         btnPrevDate.setOnClickListener(v -> changeDate(-1)); // 하루 전
         btnNextDate.setOnClickListener(v -> changeDate(1));  // 하루 후
@@ -654,6 +665,46 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(this, skin.name + " 스킨 선택!", Toast.LENGTH_SHORT).show();
         finish();
+    }
+
+    private void showDatePicker() {
+        // 현재 currentDate 기준으로 초기값 설정
+        Calendar cal = Calendar.getInstance();
+        try {
+            Date cur = dateFormat.parse(currentDate);
+            if (cur != null) {
+                cal.setTime(cur);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH);          // 0~11
+        int day   = cal.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (view, y, m, d) -> {
+                    Calendar picked = Calendar.getInstance();
+                    picked.set(y, m, d);
+
+                    // 선택한 날짜를 yyyy-MM-dd 문자열로 변환
+                    currentDate = dateFormat.format(picked.getTime());
+
+                    if (textCurrentDate != null) {
+                        textCurrentDate.setText(currentDate);
+                    }
+
+                    // 해당 날짜의 TODO / 맥주잔 다시 로드
+                    loadTodos();
+                    updateBeerProgress();
+                    // 원하면 updateStreak()도 호출 가능
+                },
+                year, month, day
+        );
+
+        dialog.show();
     }
 
 

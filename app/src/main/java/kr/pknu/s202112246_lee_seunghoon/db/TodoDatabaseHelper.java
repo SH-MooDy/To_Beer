@@ -169,7 +169,7 @@ public class TodoDatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
-    // 오늘 날짜의 "완료"된 할 일 개수
+    // 오늘 날짜의 완료된 할 일 개수
     public int getDoneCountByDate(String date) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(

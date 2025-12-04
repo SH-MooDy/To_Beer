@@ -1,19 +1,18 @@
 package kr.pknu.s202112246_lee_seunghoon.ui;
 
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import kr.pknu.s202112246_lee_seunghoon.adapter.SkinAdapter;
-import kr.pknu.s202112246_lee_seunghoon.model.BeerSkin;
-
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import kr.pknu.s202112246_lee_seunghoon.R;
+import kr.pknu.s202112246_lee_seunghoon.adapter.SkinAdapter;
+import kr.pknu.s202112246_lee_seunghoon.model.BeerSkin;
 
 public class ShopActivity extends AppCompatActivity {
 
@@ -43,6 +42,10 @@ public class ShopActivity extends AppCompatActivity {
             Toast.makeText(this, "디버그: 코인 50개 지급 🪙", Toast.LENGTH_SHORT).show();
             return true;
         });
+
+        // 메인으로 돌아가기 버튼
+        ImageButton btnCloseShop = findViewById(R.id.btnCloseShop);
+        btnCloseShop.setOnClickListener(v -> finish());
 
         setupRecyclerView();
     }

@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--메뉴 아이템 리스트-->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/menu_weekly_stats"
         android:icon="@drawable/ic_chart"
         android:title="주간 통계"/>
+
+    <item
+        android:id="@+id/menu_calendar"
+        android:icon="@drawable/ic_calendar"
+        android:title="목표 달성 캘린더"/>
 
     <item
         android:id="@+id/menu_shop"
